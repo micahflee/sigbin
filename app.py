@@ -1,6 +1,6 @@
-from flask import Flask, request, Response, render_template, redirect, flash, get_flashed_messages
+from flask import Flask, session, request, Response, render_template, redirect, flash, get_flashed_messages
 from subprocess import Popen, PIPE
-import os, re, platform
+import os, sys, re, platform
 
 import config
 
@@ -12,9 +12,7 @@ def mkdir(path):
         os.makedirs(path, 0700)
 
 messages_path = './messages'
-pending_path = './pending'
 mkdir(messages_path)
-mkdir(pending_path)
 
 class GnuPG(object):
     def __init__(self):
@@ -30,41 +28,39 @@ class GnuPG(object):
         # Default key server
         self.keyserver = 'hkp://pool.sks-keyservers.net'
 
-        # Make sure we have a server key
-        self.seckey_fp = self.get_seckey_fp()
-
-    def get_seckey_fp(self):
-        return None
-
     def _gpg(self, args, input=None):
         p = Popen([self.gpg_path, '--batch', '--no-tty', '--keyserver', self.keyserver, '--homedir', self.homedir] + args, stdout=PIPE, stdin=PIPE, stderr=PIPE)
         if input:
-            (stdoutdata, stderrdata) = p.communicate(input)
+            (out, err) = p.communicate(input)
         else:
             p.wait()
-            stderrdata = p.stderr.read()
+            out = p.stdout.read()
+            err = p.stderr.read()
 
-        print stderrdata
-        return stderrdata
+        if out != '':
+            print 'stdout', out
+        if err != '':
+            print 'stderr', err
+        return out, err
 
-    def verify(self, text):
-        output = self._gpg(['--verify'], text)
+    def verify(self, message):
+        out, err = self._gpg(['--verify'], message)
 
         # Do we have the signing key?
-        if "Can't check signature: No public key" in output:
+        if "Can't check signature: No public key" in err:
             keyid = ''
-            for line in output.split('\n'):
+            for line in err.split('\n'):
                 if line.startswith('gpg: Signature made'):
                     keyid = line.split()[-1]
             if re.match(r'^[a-fA-F\d]{8}$', keyid):
                 # Try to fetch the signing key from key server
-                output = self._gpg(['--recv-keys', keyid])
+                out, err = self._gpg(['--recv-keys', keyid])
 
-                if "key {} not found on keyserver".format(keyid) in output:
+                if "key {} not found on keyserver".format(keyid) in err:
                     return ("The signing key was not found on key servers", None)
                 else:
                     import_success = False
-                    for line in output.split('\n'):
+                    for line in err.split('\n'):
                         if line.startswith('gpg: key {}: public key "'.format(keyid)) and line.endswith('" imported'):
                             import_success = True
 
@@ -72,14 +68,14 @@ class GnuPG(object):
                         return ('Failed to import signing key from key server', None)
 
                     # Call verify again, now that we have the key
-                    return self.verify(text)
+                    return self.verify(message)
             else:
                 return ('No public key, and cannot extract keyid', None)
 
         # Was the signature good?
         good_sig = False
         fingerprint = None
-        for line in output.split('\n'):
+        for line in err.split('\n'):
             if line.startswith('gpg: Good signature from '):
                 good_sig = True
             if line.startswith('Primary key fingerprint: '):
@@ -91,6 +87,10 @@ class GnuPG(object):
             return (None, fingerprint)
         else:
             return ('Bad signature', None)
+
+    def encrypt(self, message, fingerprint):
+        out, err = self._gpg(['--armor', '--no-emit-version', '--no-comments', '--trust-model', 'always', '--encrypt', '--recipient', fingerprint], message)
+        return out
 
 gpg = GnuPG()
 
@@ -116,30 +116,43 @@ def view(fingerprint):
 
 @app.route('/update/1', methods=['POST'])
 def update1():
-    text = request.form['signed-text']
+    message = request.form['signed-text']
 
     # Check for valid-looking PGP-signed text
-    if '-----BEGIN PGP SIGNED MESSAGE-----' not in text or '-----BEGIN PGP SIGNATURE-----' not in text or '-----END PGP SIGNATURE-----' not in text:
+    if '-----BEGIN PGP SIGNED MESSAGE-----' not in message or '-----BEGIN PGP SIGNATURE-----' not in message or '-----END PGP SIGNATURE-----' not in message:
         flash("That wasn't a PGP-signed message", 'error')
         return redirect('/')
 
     # Verify the signature
-    error, fp = gpg.verify(text)
+    error, fp = gpg.verify(message)
     if error:
         flash(error, 'error')
         return redirect('/')
 
-    # The signature is valid, so save it in the pending dir
-    path = os.path.join(pending_path, fp)
-    open(path, 'w').write(text)
+    # The signature is valid, so save it in the session
+    session['fp'] = fp
+    session['message'] = message
 
-    return render_template('update2.html', site_name = config.SITE_NAME, footer = config.FOOTER)
+    # Generate a challenge string, store it in the session
+    session['challenge'] = open('/dev/urandom').read(16).encode('hex')
+    print session['challenge']
+
+    # Encrypt it to the user's public key
+    ciphertext = gpg.encrypt(session['challenge']+'\n', fp)
+
+    # Challenge the user
+    return render_template('update2.html', ciphertext = ciphertext, site_name = config.SITE_NAME, footer = config.FOOTER)
 
 @app.route('/update/2', methods=['POST'])
 def update2():
-    return ''
-    #return redirect('/%s' % fp)
-
+    challenge = request.form['challenge'].strip()
+    if challenge == session['challenge']:
+        # Success, save the message
+        open(os.path.join(messages_path, session['fp']), 'w').write(session['message'])
+        return redirect('/%s' % session['fp'])
+    else:
+        flash('Nice try but WRONG', 'error')
+        return redirect('/')
 
 if __name__ == '__main__':
     app.run(debug = config.DEBUG)
