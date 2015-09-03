@@ -88,7 +88,7 @@ gpg = GnuPG()
 
 @app.route('/')
 def index():
-    return render_template('index.html', site_name = config.SITE_NAME)
+    return render_template('index.html', site_name = config.SITE_NAME, footer = config.FOOTER)
 
 @app.route('/<fingerprint>')
 def view(fingerprint):
