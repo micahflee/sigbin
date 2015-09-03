@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Sigbin</title>
+    <title>{{ site_name }}</title>
     <style>
     body {
       font-family: monospace;
@@ -25,12 +25,23 @@
     </style>
   </head>
   <body>
-    <h1>Sigbin</h1>
+    <h1>{{ site_name }}</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
     <form action="/update" method="post">
       <fieldset>
         <label for="signed-text">Paste a block of PGP-signed text</label>
         <textarea name="signed-text" id="signed-text"></textarea>
-        <input type="submit" value="Add or Update">
+        <input type="submit" value="Save">
       </fieldset>
     </form>
   </body>

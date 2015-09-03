@@ -1,7 +1,11 @@
-from flask import Flask, request, Response, render_template, redirect
+from flask import Flask, request, Response, render_template, redirect, flash, get_flashed_messages
 from subprocess import Popen, PIPE
 import os, re, platform
+
+import config
+
 app = Flask(__name__)
+app.secret_key = config.APP_SECRET
 
 def mkdir(path):
     if not os.path.exists(path):
@@ -84,7 +88,7 @@ gpg = GnuPG()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', site_name = config.SITE_NAME)
 
 @app.route('/<fingerprint>')
 def view(fingerprint):
@@ -108,12 +112,14 @@ def update():
 
     # Check for valid-looking PGP-signed text
     if '-----BEGIN PGP SIGNED MESSAGE-----' not in text or '-----BEGIN PGP SIGNATURE-----' not in text or '-----END PGP SIGNATURE-----' not in text:
-        return "That wasn't a PGP-signed message"
+        flash("That wasn't a PGP-signed message", 'error')
+        return redirect('/')
 
     # Verify the signature
     error, fp = gpg.verify(text)
     if error:
-        return error
+        flash(error, 'error')
+        return redirect('/')
 
     # The signature is valid, so save it
     path = os.path.join(messages_path, fp)
@@ -122,4 +128,4 @@ def update():
     return redirect('/%s' % fp)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug = config.DEBUG)

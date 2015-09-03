@@ -1,3 +1,5 @@
 env
 homedir
 messages
+config.py
+*.pyc
