@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block body %}
+  <form action="/update/1" method="post">
+    <p><label for="challenge">Great. Now decrypt the following challenge message and copy and paste the plaintext into the box.</label></p>
+<pre>
+TODO: some PGP in here
+</pre>
+
+    <p><input name="challenge" class="challenge" /></p>
+    <p class="center"><input type="submit" class="btn" value="Continue"></p>
+  </form>
+{% endblock %}

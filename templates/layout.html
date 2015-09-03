@@ -11,18 +11,17 @@
       color: #333333;
       font-family: sans-serif;
     }
+    .wrapper {
+      max-width: 100%;
+      width: 700px;
+      margin: 0 auto;
+    }
     h1 {
       text-align: center;
       margin: 1em;
     }
     p {
       margin-bottom: 1em;
-    }
-    fieldset {
-      border: 0;
-      max-width: 100%;
-      width: 700px;
-      margin: 0 auto;
     }
     textarea {
       width: 100%;
@@ -33,6 +32,12 @@
     }
     input[type='submit'] {
       border: 0;
+    }
+    input.challenge {
+      width: 100%;
+      font-size: 1em;
+      padding: 1em;
+      margin-top: 1em;
     }
     .footer {
       padding: 1em;
@@ -87,26 +92,21 @@
     </style>
   </head>
   <body>
-    <h1>{{ site_name }}</h1>
+    <div class="wrapper">
+      <h1>{{ site_name }}</h1>
 
-    <form action="/update" method="post">
-      <fieldset>
-        <p><label for="signed-text">Paste a PGP-signed block of text to save it. If you use the same signing key, old text will be overwritten with new text. You can access the the block of text using the signing key's fingerprint.</label></p>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul class=flashes>
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
 
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <ul class=flashes>
-            {% for message in messages %}
-              <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-          {% endif %}
-        {% endwith %}
-
-        <p><textarea name="signed-text" id="signed-text"></textarea></p>
-        <p class="center"><input type="submit" class="btn" value="Save"></p>
-      </fieldset>
-    </form>
+      {% block body %}{% endblock %}
+    </div>
 
     {% if footer %}
     <div class="footer">{{ footer|safe }}</div>

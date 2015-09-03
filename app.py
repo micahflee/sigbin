@@ -12,7 +12,9 @@ def mkdir(path):
         os.makedirs(path, 0700)
 
 messages_path = './messages'
+pending_path = './pending'
 mkdir(messages_path)
+mkdir(pending_path)
 
 class GnuPG(object):
     def __init__(self):
@@ -88,7 +90,7 @@ gpg = GnuPG()
 
 @app.route('/')
 def index():
-    return render_template('index.html', site_name = config.SITE_NAME, footer = config.FOOTER)
+    return render_template('update1.html', site_name = config.SITE_NAME, footer = config.FOOTER)
 
 @app.route('/<fingerprint>')
 def view(fingerprint):
@@ -106,8 +108,8 @@ def view(fingerprint):
     else:
         return 'Invalid fingerprint'
 
-@app.route('/update', methods=['POST'])
-def update():
+@app.route('/update/1', methods=['POST'])
+def update1():
     text = request.form['signed-text']
 
     # Check for valid-looking PGP-signed text
@@ -121,11 +123,17 @@ def update():
         flash(error, 'error')
         return redirect('/')
 
-    # The signature is valid, so save it
-    path = os.path.join(messages_path, fp)
+    # The signature is valid, so save it in the pending dir
+    path = os.path.join(pending_path, fp)
     open(path, 'w').write(text)
 
-    return redirect('/%s' % fp)
+    return render_template('update2.html', site_name = config.SITE_NAME, footer = config.FOOTER)
+
+@app.route('/update/2', methods=['POST'])
+def update2():
+    return ''
+    #return redirect('/%s' % fp)
+
 
 if __name__ == '__main__':
     app.run(debug = config.DEBUG)
