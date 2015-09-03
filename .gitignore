@@ -1,5 +1,6 @@
 env
 homedir
 messages
+pending
 config.py
 *.pyc
