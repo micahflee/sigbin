@@ -48,7 +48,7 @@ class GnuPG(object):
         out, err = self._gpg(['--verify'], message)
 
         # Do we have the signing key?
-        if "Can't check signature: No public key" in err:
+        if "Can't check signature: No public key" in err or "Can't check signature: public key not found" in err:
             keyid = ''
             for line in err.split('\n'):
                 if line.startswith('gpg: Signature made'):
