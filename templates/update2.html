@@ -1,12 +1,15 @@
 {% extends "layout.html" %}
 {% block body %}
-  <form action="/update/2" method="post">
-    <p><label for="challenge">Great. Now decrypt the following challenge message and copy and paste the plaintext into the box.</label></p>
+
+<p>Great. Now decrypt the following challenge message and copy and paste the plaintext into the box.</p>
+
 <pre>
 {{ ciphertext }}
 </pre>
 
-    <p><input name="challenge" class="challenge" /></p>
-    <p class="center"><input type="submit" class="btn" value="Continue"></p>
-  </form>
+<form action="/update/2" method="post">
+  <p class="input-wrapper"><input name="challenge" class="challenge" type="text" /></p>
+  <p class="center"><input type="submit" class="btn" value="Continue"></p>
+</form>
+
 {% endblock %}

@@ -1,8 +1,9 @@
 {% extends "layout.html" %}
 {% block body %}
-  <form action="/update/1" method="post">
-    <p><label for="signed-text">Paste a PGP-signed block of text to save it. If you use the same signing key, old text will be overwritten with new text. You can access the the block of text using the signing key's fingerprint.</label></p>
-    <p><textarea name="signed-text" class="signed-text"></textarea></p>
-    <p class="center"><input type="submit" class="btn" value="Continue"></p>
-  </form>
+
+<form action="/update/1" method="post">
+  <p class="input-wrapper"><textarea name="signed-text" class="signed-text"></textarea></p>
+  <p class="center"><input type="submit" class="btn" value="Continue"></p>
+</form>
+
 {% endblock %}

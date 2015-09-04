@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>{{ site_name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <style>
     * {
       margin: 0;
@@ -10,6 +11,7 @@
       background-color: #ffffff;
       color: #333333;
       font-family: sans-serif;
+      padding: 0 1em;
     }
     .wrapper {
       max-width: 100%;
@@ -18,36 +20,45 @@
     }
     h1 {
       text-align: center;
+      font-size: 1.7em;
       margin: 1em;
     }
     p {
       margin-bottom: 1em;
     }
-    textarea {
+    textarea, input[type="text"] {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
       width: 100%;
-      height: 200px;
       font-family: monospace;
-      font-size: 1em;
+      font-size: 1.3em;
       padding: 1em;
+      border: 1px solid #AAAAAA;
+      color: #229922;
+    }
+    textarea {
+      height: 11em;
     }
     input[type='submit'] {
       border: 0;
     }
     input.challenge {
-      width: 100%;
-      font-size: 1em;
-      padding: 1em;
       margin-top: 1em;
+    }
+    pre {
+      font-size: 1.2em;
     }
     .footer {
       padding: 1em;
-      margin: 1em;
-      background-color: #333333;
-      color: #ffffff;
+      margin: 3em 1em 1em 1em;
+      color: #666666;
+      font-size: 0.9em;
+      text-align: center;
     }
-    .footer a {
-      color: #99ff99;
-      text-decoration: none;
+    a {
+      color: #000000;
+      text-decoration: underline;
     }
     .center {
       text-align: center;
@@ -75,7 +86,7 @@
       border-radius: 9px;
       font-family: Arial;
       color: #ffffff;
-      font-size: 20px;
+      font-size: 1.5em;
       padding: 5px 10px 5px 10px;
       text-decoration: none;
     }
@@ -93,7 +104,11 @@
   </head>
   <body>
     <div class="wrapper">
-      <h1>{{ site_name }}</h1>
+      <h1><a href="/">{{ site_name }}</a></h1>
+
+      {% if homepage_text %}
+      <p>{{ homepage_text|safe }}</p>
+      {% endif %}
 
       {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -109,7 +124,9 @@
     </div>
 
     {% if footer %}
-    <div class="footer">{{ footer|safe }}</div>
+    <div class="footer">
+      {{ footer|safe }}
+    </div>
     {% endif %}
   </body>
 </html>
