@@ -135,7 +135,6 @@ def update1():
 
     # Generate a challenge string, store it in the session
     session['challenge'] = open('/dev/urandom').read(16).encode('hex')
-    print session['challenge']
 
     # Encrypt it to the user's public key
     ciphertext = gpg.encrypt(session['challenge']+'\n', fp)
