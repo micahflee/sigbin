@@ -1,6 +1,6 @@
 from flask import Flask, session, request, Response, render_template, redirect, flash, get_flashed_messages
 from subprocess import Popen, PIPE
-import os, sys, re, platform
+import os, sys, re, platform, inspect
 
 import config
 
