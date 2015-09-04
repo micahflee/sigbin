@@ -7,13 +7,12 @@ import config
 app = Flask(__name__)
 app.secret_key = config.APP_SECRET
 
+d = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 def mkdir(path):
-    d = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    path = os.path.join(d, path)
     if not os.path.exists(path):
         os.makedirs(path, 0700)
 
-messages_path = 'messages'
+messages_path = os.path.join(d, 'message')
 mkdir(messages_path)
 
 class GnuPG(object):
@@ -24,7 +23,7 @@ class GnuPG(object):
             self.gpg_path = '/usr/bin/gpg'
 
         # Create a homedir to work in
-        self.homedir = 'homedir'
+        self.homedir = os.path.join(d, 'homedir')
         mkdir(self.homedir)
 
         # Default key server
