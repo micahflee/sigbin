@@ -2,10 +2,13 @@ from flask import Flask, session, request, Response, render_template, redirect, 
 from subprocess import Popen, PIPE
 import os, sys, re, platform, inspect
 
+from flask.ext.session import Session
+
 import config
 
 app = Flask(__name__)
 app.config.from_object(config.FlaskConfig)
+Session(app)
 
 d = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 def mkdir(path):
