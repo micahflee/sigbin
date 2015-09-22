@@ -5,7 +5,7 @@ import os, sys, re, platform, inspect
 import config
 
 app = Flask(__name__)
-app.secret_key = config.APP_SECRET
+app.config.from_object(config.FlaskConfig)
 
 d = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 def mkdir(path):
@@ -155,4 +155,4 @@ def update2():
         return redirect('/')
 
 if __name__ == '__main__':
-    app.run(debug = config.DEBUG)
+    app.run()
