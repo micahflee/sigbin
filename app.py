@@ -41,11 +41,12 @@ class GnuPG(object):
             out = p.stdout.read()
             err = p.stderr.read()
 
-        if out != '':
-            print 'stdout', out
-        if err != '':
-            print 'stderr', err
-        return out, err
+        if config.FlaskConfig.DEBUG:
+            if out != '':
+                print 'stdout', out
+            if err != '':
+                print 'stderr', err
+            return out, err
 
     def verify(self, message):
         out, err = self._gpg(['--verify'], message)
