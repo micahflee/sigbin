@@ -46,7 +46,8 @@ class GnuPG(object):
                 print 'stdout', out
             if err != '':
                 print 'stderr', err
-            return out, err
+
+        return out, err
 
     def verify(self, message):
         out, err = self._gpg(['--verify'], message)
